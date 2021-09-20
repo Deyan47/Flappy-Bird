@@ -5,6 +5,27 @@ let frames = 0;
 const sprite = new Image();
 sprite.src = "img/sprite.png";
 
+const state = {
+  current: 0,
+  getReady: 0,
+  game: 1,
+  over: 2,
+};
+
+cvs.addEventListener("click", function (e) {
+  switch (state.current) {
+    case state.getReady:
+      state.current = state.game;
+      break;
+    case state.game:
+      bird.flap();
+      break;
+    case state.over:
+      state.current = state.getReady;
+      break;
+  }
+});
+
 //background
 const bg = {
   sX: 0,
@@ -89,6 +110,10 @@ const bird = {
 
   frame: 0,
 
+  gravity: 0.25,
+  jump: 4.6,
+  speed: 0,
+
   draw: function () {
     let bird = this.animation[this.frame];
 
@@ -104,6 +129,33 @@ const bird = {
       this.h
     );
   },
+
+  flap: function () {
+    this.speed = -this.jump;
+  },
+
+  update: function () {
+    // if the game state is get ready state, the bird must flap slow
+    this.period = state.current == state.getReady ? 10 : 5;
+    // increment the frame by 1 each period
+    this.frame += frames % this.period == 0 ? 1 : 0;
+    // frame goes from 0 to 4 then again to 0
+    this.frame = this.frame % this.animation.length;
+
+    if (state.current == state.getReady) {
+      this.y = 150;
+    } else {
+      this.speed += this.gravity;
+      this.y += this.speed;
+
+      if (this.y + this.h / 2 >= cvs.height - fg.h) {
+        this.y = cvs.height - fg.h - this.h / 2;
+        if (state.current == state.game) {
+          state.current = state.over;
+        }
+      }
+    }
+  },
 };
 
 const getReady = {
@@ -115,17 +167,19 @@ const getReady = {
   y: 80,
 
   draw: function () {
-    ctx.drawImage(
-      sprite,
-      this.sX,
-      this.sY,
-      this.w,
-      this.h,
-      this.x,
-      this.y,
-      this.w,
-      this.h
-    );
+    if (state.current == state.getReady) {
+      ctx.drawImage(
+        sprite,
+        this.sX,
+        this.sY,
+        this.w,
+        this.h,
+        this.x,
+        this.y,
+        this.w,
+        this.h
+      );
+    }
   },
 };
 
@@ -138,17 +192,19 @@ const gameOver = {
   y: 90,
 
   draw: function () {
-    ctx.drawImage(
-      sprite,
-      this.sX,
-      this.sY,
-      this.w,
-      this.h,
-      this.x,
-      this.y,
-      this.w,
-      this.h
-    );
+    if (state.current == state.over) {
+      ctx.drawImage(
+        sprite,
+        this.sX,
+        this.sY,
+        this.w,
+        this.h,
+        this.x,
+        this.y,
+        this.w,
+        this.h
+      );
+    }
   },
 };
 
@@ -163,7 +219,9 @@ function draw() {
   gameOver.draw();
 }
 
-function update() {}
+function update() {
+  bird.update();
+}
 
 function loop() {
   update();
