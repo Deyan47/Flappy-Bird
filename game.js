@@ -326,10 +326,10 @@ const pipes = {
       p.x -= this.dx;
 
       //when the current pipes go beyond the canvas, delete them
-      if (p.x + this.width <= 0) {
+      if (p.x + this.w <= 0) {
         this.position.shift();
-        score.value += 1;
 
+        score.value += 1;
         score.best = Math.max(score.value, score.best);
         localStorage.setItem("best", score.best);
       }
@@ -343,6 +343,7 @@ const score = {
 
   draw: function () {
     ctx.fillStyle = "#FFF";
+    ctx.strokeStyle = "#000";
 
     if (state.current == state.game) {
       ctx.lineWidth = 2;
@@ -350,13 +351,13 @@ const score = {
       ctx.fillText(this.value, cvs.width / 2, 50);
       ctx.strokeText(this.value, cvs.width / 2, 50);
     } else if (state.current == state.over) {
-      //score
+      // SCORE VALUE
       ctx.font = "25px Teko";
       ctx.fillText(this.value, 225, 186);
       ctx.strokeText(this.value, 225, 186);
-      //best score
-      ctx.fillText(this.value, 225, 228);
-      ctx.strokeText(this.value, 225, 228);
+      // BEST SCORE
+      ctx.fillText(this.best, 225, 228);
+      ctx.strokeText(this.best, 225, 228);
     }
   },
 };
