@@ -6,6 +6,21 @@ let DEGREE = Math.PI / 180;
 const sprite = new Image();
 sprite.src = "img/sprite.png";
 
+const SCORE_S = new Audio();
+SCORE_S.src = "audio/sfx_point.wav";
+
+const FLAP = new Audio();
+FLAP.src = "audio/sfx_flap.wav";
+
+const HIT = new Audio();
+HIT.src = "audio/sfx_hit.wav";
+
+const SWOOSHING = new Audio();
+SWOOSHING.src = "audio/sfx_swooshing.wav";
+
+const DIE = new Audio();
+DIE.src = "audio/sfx_die.wav";
+
 const state = {
   current: 0,
   getReady: 0,
@@ -13,16 +28,41 @@ const state = {
   over: 2,
 };
 
+const startBtn = {
+  x: 120,
+  y: 263,
+  w: 83,
+  h: 29,
+};
+
 cvs.addEventListener("click", function (e) {
   switch (state.current) {
     case state.getReady:
       state.current = state.game;
+      SWOOSHING.play();
       break;
     case state.game:
+      if (bird.y - bird.radius <= 0) return;
       bird.flap();
+      FLAP.play();
       break;
     case state.over:
-      state.current = state.getReady;
+      let rect = cvs.getBoundingClientRect();
+      let clickX = e.clientX - rect.left;
+      let clickY = e.clientY - rect.top;
+
+      // check if start btn is clicked
+      if (
+        clickX >= startBtn.x &&
+        clickX <= startBtn.x + startBtn.w &&
+        clickY >= startBtn.y &&
+        clickY <= startBtn.y + startBtn.h
+      ) {
+        pipes.reset();
+        bird.speedReset();
+        score.reset();
+        state.current = state.getReady;
+      }
       break;
   }
 });
@@ -180,6 +220,9 @@ const bird = {
       }
     }
   },
+  speedReset: function () {
+    this.speed = 0;
+  },
 };
 
 const getReady = {
@@ -335,6 +378,9 @@ const pipes = {
       }
     }
   },
+  reset: function () {
+    this.position = [];
+  },
 };
 
 const score = {
@@ -359,6 +405,9 @@ const score = {
       ctx.fillText(this.best, 225, 228);
       ctx.strokeText(this.best, 225, 228);
     }
+  },
+  reset: function () {
+    this.value = 0;
   },
 };
 
