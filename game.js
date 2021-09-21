@@ -117,6 +117,7 @@ const bird = {
   w: 34,
   h: 26,
 
+  radius: 12,
   frame: 0,
 
   gravity: 0.25,
@@ -297,12 +298,65 @@ const pipes = {
 
     for (let i = 0; i < this.position.length; i++) {
       let p = this.position[i];
+
+      let bottomPipeYPos = p.y + this.h + this.gap;
+
+      //collision detect
+      //top pipe
+      if (
+        bird.x + bird.radius > p.x &&
+        bird.x - bird.radius < p.x + this.w &&
+        bird.y + bird.radius > p.y &&
+        bird.y - bird.radius < p.y + this.h
+      ) {
+        state.current = state.over;
+      }
+
+      //bottom pipes
+      if (
+        bird.x + bird.radius > p.x &&
+        bird.x - bird.radius < p.x + this.w &&
+        bird.y + bird.radius > bottomPipeYPos &&
+        bird.y - bird.radius < bottomPipeYPos + this.h
+      ) {
+        state.current = state.over;
+      }
+
+      //moving the pipes to the left
       p.x -= this.dx;
 
       //when the current pipes go beyond the canvas, delete them
       if (p.x + this.width <= 0) {
         this.position.shift();
+        score.value += 1;
+
+        score.best = Math.max(score.value, score.best);
+        localStorage.setItem("best", score.best);
       }
+    }
+  },
+};
+
+const score = {
+  best: parseInt(localStorage.getItem("best")) || 0,
+  value: 0,
+
+  draw: function () {
+    ctx.fillStyle = "#FFF";
+
+    if (state.current == state.game) {
+      ctx.lineWidth = 2;
+      ctx.font = "35px Teko";
+      ctx.fillText(this.value, cvs.width / 2, 50);
+      ctx.strokeText(this.value, cvs.width / 2, 50);
+    } else if (state.current == state.over) {
+      //score
+      ctx.font = "25px Teko";
+      ctx.fillText(this.value, 225, 186);
+      ctx.strokeText(this.value, 225, 186);
+      //best score
+      ctx.fillText(this.value, 225, 228);
+      ctx.strokeText(this.value, 225, 228);
     }
   },
 };
@@ -317,6 +371,7 @@ function draw() {
   bird.draw();
   getReady.draw();
   gameOver.draw();
+  score.draw();
 }
 
 function update() {
