@@ -1,6 +1,7 @@
 const cvs = document.getElementById("bird");
 const ctx = cvs.getContext("2d");
 let frames = 0;
+let DEGREE = Math.PI / 180;
 
 const sprite = new Image();
 sprite.src = "img/sprite.png";
@@ -70,6 +71,8 @@ const fg = {
   x: 0,
   y: cvs.height - 112,
 
+  dx: 2,
+
   draw: function () {
     ctx.drawImage(
       sprite,
@@ -94,6 +97,12 @@ const fg = {
       this.h
     );
   },
+
+  update: function () {
+    if (state.current == state.game) {
+      this.x = (this.x - this.dx) % (this.w / 2);
+    }
+  },
 };
 
 const bird = {
@@ -113,9 +122,14 @@ const bird = {
   gravity: 0.25,
   jump: 4.6,
   speed: 0,
+  rotation: 0,
 
   draw: function () {
     let bird = this.animation[this.frame];
+
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rotation);
 
     ctx.drawImage(
       sprite,
@@ -123,11 +137,13 @@ const bird = {
       bird.sY,
       this.w,
       this.h,
-      this.x - this.w / 2,
-      this.y - this.h / 2,
+      -this.w / 2,
+      -this.h / 2,
       this.w,
       this.h
     );
+
+    ctx.restore();
   },
 
   flap: function () {
@@ -144,6 +160,7 @@ const bird = {
 
     if (state.current == state.getReady) {
       this.y = 150;
+      this.rotation = 0 * DEGREE;
     } else {
       this.speed += this.gravity;
       this.y += this.speed;
@@ -153,6 +170,12 @@ const bird = {
         if (state.current == state.game) {
           state.current = state.over;
         }
+      }
+      if (this.speed >= this.jump) {
+        this.rotation = 90 * DEGREE;
+        this.frame = 1;
+      } else {
+        this.rotation = -25 * DEGREE;
       }
     }
   },
@@ -208,6 +231,26 @@ const gameOver = {
   },
 };
 
+const pipes = {
+  bottom: {
+    sX: 502,
+    sY: 0,
+  },
+  top: {
+    sX: 553,
+    sY: 0,
+  },
+  w: 53,
+  h: 400,
+  gap: 85,
+  dx: 2,
+  maxYPos: -150,
+
+  update: function () {},
+
+  draw: function () {},
+};
+
 function draw() {
   ctx.fillStyle = "#70c5ce";
   ctx.fillRect(0, 0, cvs.width, cvs.height);
@@ -221,6 +264,7 @@ function draw() {
 
 function update() {
   bird.update();
+  fg.update();
 }
 
 function loop() {
